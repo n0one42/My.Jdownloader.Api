@@ -112,7 +112,7 @@ namespace My.JDownloader.Api.ApiHandler
 				if (deserialize)
 					return (T)JsonConvert.DeserializeObject(response, typeof(T));
 			}
-			catch (Exception ex)
+			catch (Exception)
 			{
 				// Attempt the alternative logic
 				try
@@ -210,22 +210,22 @@ namespace My.JDownloader.Api.ApiHandler
 					key[i - 16] = ivKey[i];
 				}
 			}
-			using (var aes = Aes.Create())
+			var rj = new RijndaelManaged
 			{
-				aes.Key = key;
-				aes.IV = iv;
-				aes.Mode = CipherMode.CBC;
-				aes.BlockSize = 128;
-				ICryptoTransform encryptor = aes.CreateEncryptor();
-				var msEncrypt = new MemoryStream();
-				var csEncrypt = new CryptoStream(msEncrypt, encryptor, CryptoStreamMode.Write);
-				using (var swEncrypt = new StreamWriter(csEncrypt))
-				{
-					swEncrypt.Write(data);
-				}
-				byte[] encrypted = msEncrypt.ToArray();
-				return Convert.ToBase64String(encrypted);
+				Key = key,
+				IV = iv,
+				Mode = CipherMode.CBC,
+				BlockSize = 128
+			};
+			ICryptoTransform encryptor = rj.CreateEncryptor();
+			var msEncrypt = new MemoryStream();
+			var csEncrypt = new CryptoStream(msEncrypt, encryptor, CryptoStreamMode.Write);
+			using (var swEncrypt = new StreamWriter(csEncrypt))
+			{
+				swEncrypt.Write(data);
 			}
+			byte[] encrypted = msEncrypt.ToArray();
+			return Convert.ToBase64String(encrypted);
 		}
 
 		private string Decrypt(string data, byte[] ivKey)
@@ -249,25 +249,23 @@ namespace My.JDownloader.Api.ApiHandler
 				}
 			}
 			byte[] cypher = Convert.FromBase64String(data);
-			using (var aes = Aes.Create())
+			var rj = new RijndaelManaged
 			{
-				aes.Key = key;
-				aes.IV = iv;
-				aes.Mode = CipherMode.CBC;
-				aes.BlockSize = 128;
-
-				// Continue with your encryption or decryption operations
-				var ms = new MemoryStream(cypher);
-				string result;
-				using (var cs = new CryptoStream(ms, aes.CreateDecryptor(), CryptoStreamMode.Read))
+				BlockSize = 128,
+				Mode = CipherMode.CBC,
+				IV = iv,
+				Key = key
+			};
+			var ms = new MemoryStream(cypher);
+			string result;
+			using (var cs = new CryptoStream(ms, rj.CreateDecryptor(), CryptoStreamMode.Read))
+			{
+				using (var sr = new StreamReader(cs))
 				{
-					using (var sr = new StreamReader(cs))
-					{
-						result = sr.ReadToEnd();
-					}
+					result = sr.ReadToEnd();
 				}
-				return result;
 			}
+			return result;
 		}
 
 		#endregion
