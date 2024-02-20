@@ -19,6 +19,7 @@ namespace My.JDownloader.Api.Namespaces
         
         /// <summary>
         /// Gets the value of the given interface
+        /// All Keys can be found in the Sample Solution - allConfigs.csv
         /// </summary>
         /// <param name="interfaceName">Name of the interface.</param>
         /// <param name="storage">The storage name.</param>
