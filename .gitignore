@@ -30,3 +30,4 @@ _ReSharper*/
 .vs/
 #Nuget packages folder
 packages/
+src/My.JDownloader.Api.Sample/Program.cs
