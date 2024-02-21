@@ -244,12 +244,13 @@ namespace My.JDownloader.Api.Namespaces
         public bool IsCollecting()
         {
             var response =
-                ApiHandler.CallAction<object>(Device, "/linkgrabberv2/isCollecting", null,
+                ApiHandler.CallAction<DefaultResponse<bool>>(Device, "/linkgrabberv2/isCollecting", null,
                     JDownloaderHandler.LoginObject);
-            if (response == null)
-                return false;
-            return true;
-        }
+			if (response?.Data == null)
+				return false;
+
+			return response.Data;
+		}
 
         /// <summary>
         /// Moves one or multiple links after another link or inside a package.
