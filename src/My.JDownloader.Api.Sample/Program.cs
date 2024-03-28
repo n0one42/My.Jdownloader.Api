@@ -1,7 +1,7 @@
 ﻿using My.JDownloader.Api;
 using System.Reflection;
 
-JDownloaderHandler jdownloaderHandler = new JDownloaderHandler("USERNAME", "PASSWORD", "APPNAME");
+JDownloaderHandler jdownloaderHandler = new JDownloaderHandler("sfghtr3dfgga@byom.de", "8Seichen", "APPNAME");
 //jdownloaderHandler.Connect("YOURMEAIL", "YOURPASSWORD");
 if (jdownloaderHandler.IsConnected)
 {

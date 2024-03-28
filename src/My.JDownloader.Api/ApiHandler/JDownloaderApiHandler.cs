@@ -210,22 +210,25 @@ namespace My.JDownloader.Api.ApiHandler
 					key[i - 16] = ivKey[i];
 				}
 			}
-			var rj = new RijndaelManaged
+
+			using (var rj = Aes.Create())
 			{
-				Key = key,
-				IV = iv,
-				Mode = CipherMode.CBC,
-				BlockSize = 128
-			};
-			ICryptoTransform encryptor = rj.CreateEncryptor();
-			var msEncrypt = new MemoryStream();
-			var csEncrypt = new CryptoStream(msEncrypt, encryptor, CryptoStreamMode.Write);
-			using (var swEncrypt = new StreamWriter(csEncrypt))
-			{
-				swEncrypt.Write(data);
+				rj.Mode = CipherMode.CBC;
+				rj.BlockSize = 128;
+				rj.KeySize = 128;
+				rj.Key = key;
+				rj.IV = iv;
+
+				ICryptoTransform encryptor = rj.CreateEncryptor();
+				var msEncrypt = new MemoryStream();
+				var csEncrypt = new CryptoStream(msEncrypt, encryptor, CryptoStreamMode.Write);
+				using (var swEncrypt = new StreamWriter(csEncrypt))
+				{
+					swEncrypt.Write(data);
+				}
+				byte[] encrypted = msEncrypt.ToArray();
+				return Convert.ToBase64String(encrypted);
 			}
-			byte[] encrypted = msEncrypt.ToArray();
-			return Convert.ToBase64String(encrypted);
 		}
 
 		private string Decrypt(string data, byte[] ivKey)
@@ -249,23 +252,26 @@ namespace My.JDownloader.Api.ApiHandler
 				}
 			}
 			byte[] cypher = Convert.FromBase64String(data);
-			var rj = new RijndaelManaged
+
+			using (var rj = Aes.Create())
 			{
-				BlockSize = 128,
-				Mode = CipherMode.CBC,
-				IV = iv,
-				Key = key
-			};
-			var ms = new MemoryStream(cypher);
-			string result;
-			using (var cs = new CryptoStream(ms, rj.CreateDecryptor(), CryptoStreamMode.Read))
-			{
-				using (var sr = new StreamReader(cs))
+				rj.Mode = CipherMode.CBC;
+				rj.BlockSize = 128;
+				rj.KeySize = 128;
+				rj.Key = key;
+				rj.IV = iv;
+
+				var ms = new MemoryStream(cypher);
+				string result;
+				using (var cs = new CryptoStream(ms, rj.CreateDecryptor(), CryptoStreamMode.Read))
 				{
-					result = sr.ReadToEnd();
+					using (var sr = new StreamReader(cs))
+					{
+						result = sr.ReadToEnd();
+					}
 				}
+				return result;
 			}
-			return result;
 		}
 
 		#endregion
